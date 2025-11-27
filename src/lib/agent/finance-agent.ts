@@ -13,7 +13,13 @@ import {
 } from './tools';
 
 // Inicializar Gemini com a chave da env
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const apiKey = process.env.GEMINI_API_KEY || '';
+
+if (!apiKey) {
+  console.error('[FinanceAI-Agent] ERRO: GEMINI_API_KEY não encontrada nas variáveis de ambiente');
+}
+
+const genAI = new GoogleGenerativeAI(apiKey);
 
 // Definição das ferramentas disponíveis para o agente
 const tools = [
@@ -206,7 +212,15 @@ Sempre use as ferramentas disponíveis para acessar dados reais antes de respond
   async chat(userId: string, message: string, history: AgentMessage[] = []) {
     try {
       console.log('[FinanceAI-Agent] Recebendo mensagem:', message);
+      console.log('[FinanceAI-Agent] API Key configurada:', apiKey ? 'SIM' : 'NÃO');
       
+      if (!apiKey) {
+        return {
+          success: true,
+          message: 'Desculpe, o assistente está com problemas de configuração. Por favor, verifique se a variável GEMINI_API_KEY está configurada corretamente.',
+        };
+      }
+
       // Converte histórico para formato do Gemini
       const chatHistory = history.map((msg) => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
@@ -232,6 +246,7 @@ Sempre use as ferramentas disponíveis para acessar dados reais antes de respond
       };
     } catch (error: any) {
       console.error('[FinanceAI-Agent] Erro no chat do agente:', error);
+      console.error('[FinanceAI-Agent] Detalhes do erro:', error.message);
       
       // Retornar resposta de fallback em caso de erro
       return {
