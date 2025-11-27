@@ -12,22 +12,22 @@ export default function Dashboard() {
   const { balance, income, expenses } = calculateBalance(mockTransactions);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex min-h-screen bg-gradient-to-br from-[#0F1419] via-[#1A1A2E] to-[#16213E]">
       <Sidebar />
       
-      <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 lg:ml-72 p-6 lg:p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Dashboard
+          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2 tracking-tight">
+            Visão Geral
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Bem-vindo ao Finance AI — organize suas finanças com clareza.
+          <p className="text-sm text-gray-400 font-medium">
+            Acompanhe suas finanças em tempo real
           </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 mb-8">
           <StatCard
             title="Saldo Total"
             value={formatCurrency(balance)}
@@ -57,7 +57,7 @@ export default function Dashboard() {
             value="3"
             icon={Target}
             href="/metas"
-            color="orange"
+            color="purple"
           />
         </div>
 
