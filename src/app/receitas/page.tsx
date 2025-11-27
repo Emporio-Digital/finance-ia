@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/layout/sidebar';
+import PeriodFilterComponent from '@/components/custom/period-filter';
 import { Plus, Filter, Search, TrendingUp, Calendar, DollarSign, ArrowRight } from 'lucide-react';
 import { mockTransactions, categoryLabels } from '@/lib/mock-data';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { PeriodFilter } from '@/lib/types';
+import { filterByPeriod, getPeriodLabel } from '@/lib/period-utils';
 
 interface Receita {
   id: string;
@@ -21,6 +24,7 @@ export default function ReceitasPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [mounted, setMounted] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodFilter>('month');
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -36,9 +40,10 @@ export default function ReceitasPage() {
     setMounted(true);
   }, []);
 
-  const totalReceitas = receitas.reduce((sum, t) => sum + t.amount, 0);
+  const receitasFiltradas = filterByPeriod(receitas, selectedPeriod);
+  const totalReceitas = receitasFiltradas.reduce((sum, t) => sum + t.amount, 0);
 
-  const filteredReceitas = receitas.filter(receita => {
+  const filteredReceitas = receitasFiltradas.filter(receita => {
     const matchesSearch = receita.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || receita.category === filterCategory;
     return matchesSearch && matchesCategory;
@@ -76,22 +81,28 @@ export default function ReceitasPage() {
       <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 overflow-y-auto overscroll-contain">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2 tracking-tight">
                 Receitas
               </h1>
               <p className="text-xs sm:text-sm text-gray-400 font-medium">
-                Gerencie suas fontes de renda
+                Gerencie suas fontes de renda • {getPeriodLabel(selectedPeriod)}
               </p>
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-6 sm:py-3.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl sm:rounded-2xl hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 hover:scale-105 font-semibold text-sm"
-            >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Nova Receita</span>
-            </button>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <PeriodFilterComponent 
+                selectedPeriod={selectedPeriod}
+                onPeriodChange={setSelectedPeriod}
+              />
+              <button
+                onClick={() => setShowForm(true)}
+                className="flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-6 sm:py-3.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl sm:rounded-2xl hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 hover:scale-105 font-semibold text-sm whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Nova Receita</span>
+              </button>
+            </div>
           </div>
 
           {/* Total Card */}
@@ -102,10 +113,10 @@ export default function ReceitasPage() {
                 <div className="p-2 sm:p-3 rounded-xl bg-green-500/20 backdrop-blur-sm">
                   <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
                 </div>
-                <span className="text-xs sm:text-sm font-semibold text-green-300">Total de Receitas</span>
+                <span className="text-xs sm:text-sm font-semibold text-green-300">Total de Receitas • {getPeriodLabel(selectedPeriod)}</span>
               </div>
               <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-1 sm:mb-2">{formatCurrency(totalReceitas)}</p>
-              <p className="text-xs sm:text-sm text-green-300/80 font-medium">Este mês • {receitas.length} transações</p>
+              <p className="text-xs sm:text-sm text-green-300/80 font-medium">{filteredReceitas.length} transações</p>
             </div>
           </div>
         </div>

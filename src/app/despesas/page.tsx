@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/layout/sidebar';
+import PeriodFilterComponent from '@/components/custom/period-filter';
 import { TrendingDown, Plus, Search, Filter, Download, Calendar, CreditCard, ArrowRight } from 'lucide-react';
+import { PeriodFilter } from '@/lib/types';
+import { filterByPeriod, getPeriodLabel } from '@/lib/period-utils';
 
 interface Despesa {
   id: string;
@@ -22,6 +25,7 @@ const categoryIcons: Record<string, string> = {
 
 export default function DespesasPage() {
   const [mounted, setMounted] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodFilter>('month');
   const [despesas, setDespesas] = useState<Despesa[]>([
     { id: '1', descricao: 'Supermercado', valor: 450.00, categoria: 'Alimentação', data: '2024-01-15', conta: 'Conta Corrente' },
     { id: '2', descricao: 'Aluguel', valor: 1200.00, categoria: 'Moradia', data: '2024-01-10', conta: 'Conta Corrente' },
@@ -42,7 +46,8 @@ export default function DespesasPage() {
     setMounted(true);
   }, []);
 
-  const totalDespesas = despesas.reduce((acc, d) => acc + d.valor, 0);
+  const despesasFiltradas = filterByPeriod(despesas, selectedPeriod);
+  const totalDespesas = despesasFiltradas.reduce((acc, d) => acc + d.valor, 0);
 
   const handleSave = () => {
     if (!formData.descricao || !formData.valor || !formData.categoria || !formData.data || !formData.conta) {
@@ -73,22 +78,28 @@ export default function DespesasPage() {
       <main className="flex-1 lg:ml-72 p-4 sm:p-6 lg:p-8 overflow-y-auto overscroll-contain">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2 tracking-tight">
                 Despesas
               </h1>
               <p className="text-xs sm:text-sm text-gray-400 font-medium">
-                Gerencie seus gastos
+                Gerencie seus gastos • {getPeriodLabel(selectedPeriod)}
               </p>
             </div>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-6 sm:py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl sm:rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 hover:scale-105 font-semibold text-sm"
-            >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Nova Despesa</span>
-            </button>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <PeriodFilterComponent 
+                selectedPeriod={selectedPeriod}
+                onPeriodChange={setSelectedPeriod}
+              />
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-6 sm:py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl sm:rounded-2xl hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 hover:scale-105 font-semibold text-sm whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Nova Despesa</span>
+              </button>
+            </div>
           </div>
 
           {/* Stats Grid */}
@@ -96,7 +107,7 @@ export default function DespesasPage() {
             <div className="relative overflow-hidden bg-gradient-to-br from-red-500/20 to-red-600/10 backdrop-blur-xl border border-red-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl">
               <div className="absolute inset-0 bg-gradient-to-br from-red-400/10 to-transparent" />
               <div className="relative z-10">
-                <p className="text-xs sm:text-sm font-semibold text-red-300 mb-1 sm:mb-2">Total do Mês</p>
+                <p className="text-xs sm:text-sm font-semibold text-red-300 mb-1 sm:mb-2">Total do Período</p>
                 <p className="text-2xl sm:text-3xl font-bold text-white">
                   R$ {totalDespesas.toFixed(2)}
                 </p>
@@ -106,14 +117,14 @@ export default function DespesasPage() {
               <div className="relative z-10">
                 <p className="text-xs sm:text-sm font-semibold text-gray-400 mb-1 sm:mb-2">Média Diária</p>
                 <p className="text-2xl sm:text-3xl font-bold text-white">
-                  R$ {(totalDespesas / 30).toFixed(2)}
+                  R$ {despesasFiltradas.length > 0 ? (totalDespesas / (selectedPeriod === 'week' ? 7 : selectedPeriod === 'month' ? 30 : 365)).toFixed(2) : '0.00'}
                 </p>
               </div>
             </div>
             <div className="relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl">
               <div className="relative z-10">
                 <p className="text-xs sm:text-sm font-semibold text-gray-400 mb-1 sm:mb-2">Total de Despesas</p>
-                <p className="text-2xl sm:text-3xl font-bold text-white">{despesas.length}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white">{despesasFiltradas.length}</p>
               </div>
             </div>
           </div>
@@ -211,7 +222,7 @@ export default function DespesasPage() {
 
         {/* List */}
         <div className="space-y-3 sm:space-y-4">
-          {despesas.map((despesa) => (
+          {despesasFiltradas.map((despesa) => (
             <div
               key={despesa.id}
               className="group relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-300 hover:scale-[1.01] cursor-pointer"

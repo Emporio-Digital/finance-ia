@@ -3,6 +3,7 @@
 export type TransactionType = 'income' | 'expense';
 export type TransactionCategory = 'salary' | 'freelance' | 'investment' | 'food' | 'transport' | 'health' | 'entertainment' | 'bills' | 'other';
 export type InvestmentMode = 'fixed' | 'funds' | 'crypto';
+export type PeriodFilter = 'week' | 'month' | 'year';
 
 export interface Transaction {
   id: string;
