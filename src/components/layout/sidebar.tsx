@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   TrendingUp, 
@@ -15,9 +15,13 @@ import {
   Settings, 
   Menu,
   X,
-  Shield
+  Shield,
+  LogOut
 } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { signOut } from '@/lib/auth';
+import { toast } from 'sonner';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -30,12 +34,38 @@ const navigation = [
   { name: 'Notificações', href: '/notificacoes', icon: Bell },
   { name: 'Educação', href: '/educacao', icon: GraduationCap },
   { name: 'Configurações', href: '/configuracoes', icon: Settings },
-  { name: 'Admin', href: '/admin', icon: Shield },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const { profile, loading } = useAuth();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast.error('Erro ao sair: ' + error.message);
+    } else {
+      toast.success('Logout realizado com sucesso!');
+      router.push('/login');
+    }
+  };
+
+  // Adicionar item Admin apenas se usuário for admin
+  const navItems = profile?.is_admin 
+    ? [...navigation, { name: 'Admin', href: '/admin', icon: Shield }]
+    : navigation;
+
+  // Iniciais do usuário
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <>
@@ -80,7 +110,7 @@ export default function Sidebar() {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4 space-y-1.5 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-            {navigation.map((item) => {
+            {navItems.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
               
@@ -112,19 +142,37 @@ export default function Sidebar() {
           </nav>
 
           {/* User info */}
-          <div className="p-4 border-t border-white/10">
+          <div className="p-4 border-t border-white/10 space-y-2">
             <div className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm hover:from-white/10 hover:to-white/15 transition-all duration-200 cursor-pointer group">
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform duration-200">
-                JD
-              </div>
+              {profile?.avatar_url ? (
+                <img 
+                  src={profile.avatar_url} 
+                  alt={profile.full_name}
+                  className="w-11 h-11 rounded-full object-cover shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform duration-200"
+                />
+              ) : (
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform duration-200">
+                  {loading ? '...' : getInitials(profile?.full_name || 'U')}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">João Silva</p>
+                <p className="text-sm font-semibold text-white truncate">
+                  {loading ? 'Carregando...' : profile?.full_name || 'Usuário'}
+                </p>
                 <p className="text-xs text-gray-400 truncate flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                  Plano Premium
+                  {profile?.role || 'Membro'}
                 </p>
               </div>
             </div>
+
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-red-500/10 transition-all duration-200 group"
+            >
+              <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+              <span className="font-medium text-sm">Sair</span>
+            </button>
           </div>
         </div>
       </aside>
