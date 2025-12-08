@@ -32,12 +32,12 @@ export default function LoginPage() {
     
     if (error) {
       toast.error('Erro ao fazer login: ' + error.message);
+      setIsLoading(false);
     } else if (data.user) {
       toast.success('Login realizado com sucesso!');
-      router.push('/');
+      // Força refresh completo da página para atualizar middleware
+      window.location.href = '/';
     }
-    
-    setIsLoading(false);
   };
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
@@ -48,11 +48,15 @@ export default function LoginPage() {
     
     if (error) {
       toast.error('Erro ao criar conta: ' + error.message);
+      setIsLoading(false);
+    } else if (data.user) {
+      toast.success('Conta criada com sucesso!');
+      // Força refresh completo da página para atualizar middleware
+      window.location.href = '/';
     } else {
       toast.success('Conta criada! Verifique seu email.');
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const handleGoogleSignIn = async () => {
@@ -78,18 +82,19 @@ export default function LoginPage() {
         toast.success('Código enviado para seu telefone!');
         setShowOtpInput(true);
       }
+      setIsLoading(false);
     } else {
       const { data, error } = await verifyOtp(phone, otp);
       
       if (error) {
         toast.error('Código inválido: ' + error.message);
+        setIsLoading(false);
       } else if (data.user) {
         toast.success('Login realizado com sucesso!');
-        router.push('/');
+        // Força refresh completo da página para atualizar middleware
+        window.location.href = '/';
       }
     }
-    
-    setIsLoading(false);
   };
 
   return (
