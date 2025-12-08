@@ -3,12 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   devIndicators: false, // Remove widget de desenvolvimento Next.js
   
-  // CONFIGURAÇÃO DA PORTA PARA LASY AI - ADICIONADO
-  devServer: {
-    port: 3000,
-    hostname: '0.0.0.0'
-  },
-  
   // Ignorar erros durante build (compatibilidade Vercel)
   eslint: {
     ignoreDuringBuilds: true,
