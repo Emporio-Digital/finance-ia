@@ -16,8 +16,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showOtpInput, setShowOtpInput] = useState(false);
   
+  // Email/Password state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  // Phone state
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
 
@@ -29,13 +32,9 @@ export default function LoginPage() {
     
     if (error) {
       toast.error('Erro ao fazer login: ' + error.message);
-    } else if (data.session) {
+    } else if (data.user) {
       toast.success('Login realizado com sucesso!');
-      
-      // Recarrega a página para atualizar a sessão
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      router.push('/');
     }
     
     setIsLoading(false);
@@ -64,7 +63,6 @@ export default function LoginPage() {
       toast.error('Erro ao fazer login com Google: ' + error.message);
       setIsLoading(false);
     }
-    // O Google login redireciona automaticamente
   };
 
   const handlePhoneSignIn = async (e: React.FormEvent) => {
@@ -85,12 +83,9 @@ export default function LoginPage() {
       
       if (error) {
         toast.error('Código inválido: ' + error.message);
-      } else if (data.session) {
+      } else if (data.user) {
         toast.success('Login realizado com sucesso!');
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        router.push('/');
       }
     }
     
@@ -119,10 +114,13 @@ export default function LoginPage() {
               </TabsTrigger>
             </TabsList>
 
+            {/* Email/Password Tab */}
             <TabsContent value="email" className="space-y-4">
               <form onSubmit={handleEmailSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-300">Email</Label>
+                  <Label htmlFor="email" className="text-gray-300">
+                    Email
+                  </Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                     <Input
@@ -138,7 +136,9 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-300">Senha</Label>
+                  <Label htmlFor="password" className="text-gray-300">
+                    Senha
+                  </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                     <Input
@@ -201,10 +201,13 @@ export default function LoginPage() {
               </Button>
             </TabsContent>
 
+            {/* Phone Tab */}
             <TabsContent value="phone" className="space-y-4">
               <form onSubmit={handlePhoneSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-gray-300">Telefone</Label>
+                  <Label htmlFor="phone" className="text-gray-300">
+                    Telefone
+                  </Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                     <Input
@@ -222,7 +225,9 @@ export default function LoginPage() {
 
                 {showOtpInput && (
                   <div className="space-y-2">
-                    <Label htmlFor="otp" className="text-gray-300">Código de Verificação</Label>
+                    <Label htmlFor="otp" className="text-gray-300">
+                      Código de Verificação
+                    </Label>
                     <Input
                       id="otp"
                       type="text"
