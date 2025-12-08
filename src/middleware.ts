@@ -1,7 +1,5 @@
-// middleware desativado temporariamente para evitar bloqueios de rota
-
-export async function middleware() {
-  return Response.next();
+export function middleware() {
+  return;
 }
 
 export const config = {
